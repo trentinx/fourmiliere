@@ -1,6 +1,6 @@
 from  ants import *
 
-anthill = create_anthill("fourmiliere_trois.txt")
+anthill = create_anthill("fourmiliere_quatre.txt")
 
 last_node = anthill[-1]
 nb_ants = anthill[0].nb_ants
@@ -14,4 +14,4 @@ while last_node.nb_ants != nb_ants:
     print("----------------\n")
     step += 1
     for node in anthill:
-        node.lock = False
+        node.ants_at_start = node.nb_ants

@@ -7,8 +7,7 @@ class Node:
         self.prec_nodes = []
         self.max_ants = max_ants
         self.nb_ants = nb_ants
-        self.nb_ants_at_start = nb_ants
-        self.lock = False
+        self.ants_at_start = nb_ants
 
     def add_next(self, node):
         self.next_nodes.append(node)
@@ -56,11 +55,11 @@ def create_anthill(filename):
 def move_ants(current_node):
     if current_node.name != "Sv":
         for node in current_node.prec_nodes:
-            if not node.lock and node.nb_ants > 0:  
-                ants_to_move = min(current_node.max_ants - current_node.nb_ants , node.nb_ants)
+            if node.ants_at_start > 0:  
+                ants_to_move = min(current_node.max_ants - current_node.nb_ants, node.ants_at_start)
                 current_node.nb_ants += ants_to_move
                 node.nb_ants -= ants_to_move
-                current_node.lock = (current_node.nb_ants == current_node.max_ants)
+                node.ants_at_start -= ants_to_move
                 if ants_to_move > 0:
                     print(f"Move {ants_to_move} ants from {node.name} to {current_node.name}")
     for node in current_node.prec_nodes:
