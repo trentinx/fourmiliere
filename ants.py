@@ -57,6 +57,18 @@ class Anthill:
                  for prec_node in node.prec_nodes:
                     print(f"{node.name} - {prec_node.name}")
 
+    def move_all_ants(self):
+        last_node = self.nodes["Sd"]
+        nb_ants = self.size
+        step = 1
+        while last_node.nb_ants != nb_ants:
+            print(f"Step  {step} :")
+            move_ants(last_node)
+            print("----------------\n")
+            step += 1
+            for node in self.nodes.values():
+                node.ants_at_start = node.nb_ants
+
 
 def move_ants(current_node):
     if current_node.name != "Sv":
@@ -70,3 +82,4 @@ def move_ants(current_node):
                     print(f"Move {ants_to_move} ants from {node.name} to {current_node.name}")
     for node in current_node.prec_nodes:
         move_ants(node)
+
