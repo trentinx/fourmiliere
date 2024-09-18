@@ -16,46 +16,52 @@ class Node:
         self.prec_nodes.append(node)
 
 
-
-def create_anthill(filename):
-    sd_append = True
-    nb_ants = 0
-    anthill = []
-    with open(os.path.join("data","fourmilieres",filename),"r") as datafile:
-        for line in datafile:
-            line = line.strip("\n")
-            if line.startswith("f="):
-                nb_ants = int(line.split("=")[1])
-                anthill.append(Node("Sv",nb_ants,nb_ants))
-            elif "-" not in line:
-                if "{" in line:
-                    name,_,max_ants,_ = line.split()
-                    anthill.append(Node(name,int(max_ants)))
+class Anthill:
+    def __init__(self,filename):
+        sd_append = True
+        size = 0
+        nodes = {}
+        with open(os.path.join("data","fourmilieres",filename),"r") as datafile:
+            for line in datafile:
+                line = line.strip("\n").strip(" ")
+                if line.startswith("f="):
+                    size = int(line.split("=")[1])
+                    nodes["Sv"] = Node("Sv",size,size)
+                elif "-" not in line:
+                    if "{" in line:
+                        name,_,max_ants,_ = line.split()
+                        nodes[name] = Node(name,int(max_ants))
+                    else:
+                        nodes[line] = Node(line)
                 else:
-                    anthill.append(Node(line))
-            else:
-                if sd_append:
-                    anthill.append(Node("Sd",nb_ants,0))
-                    sd_append = False
-                src_nodename,_,tgt_nodename = line.split(" ")
-                if src_nodename == "Sd" or tgt_nodename == "Sv":
-                    tmp_nodename = src_nodename
-                    src_nodename = tgt_nodename
-                    tgt_nodename = tmp_nodename
-                for node in anthill:
-                    if node.name == src_nodename:
-                        src_node = node
-                    if node.name == tgt_nodename:
-                        tgt_node = node
-                        break
-                src_node.add_next(tgt_node)
-                tgt_node.add_pred(src_node)
-    return anthill
+                    if sd_append:
+                        nodes["Sd"] = Node("Sd",size,0)
+                        sd_append = False
+                    src_nodename,_,tgt_nodename = line.split(" ")
+                    if src_nodename == "Sd" or tgt_nodename == "Sv":
+                        tmp_nodename = src_nodename
+                        src_nodename = tgt_nodename
+                        tgt_nodename = tmp_nodename
+                    nodes[src_nodename].add_next(nodes[tgt_nodename])
+                    nodes[tgt_nodename].add_pred(nodes[src_nodename])
+        self.nodes = nodes
+        self.size = size
+    
+    def print_nodes(self, reverse=False):
+        if not reverse:
+            for node in self.nodes.values():
+                for next_node in node.next_nodes:
+                    print(f"{node.name} - {next_node.name}")
+        else:
+            for node in self.nodes.values().__reversed__():
+                 for prec_node in node.prec_nodes:
+                    print(f"{node.name} - {prec_node.name}")
+
 
 def move_ants(current_node):
     if current_node.name != "Sv":
         for node in current_node.prec_nodes:
-            if node.ants_at_start > 0:  
+            if node.ants_at_start > 0:
                 ants_to_move = min(current_node.max_ants - current_node.nb_ants, node.ants_at_start)
                 current_node.nb_ants += ants_to_move
                 node.nb_ants -= ants_to_move
@@ -64,7 +70,3 @@ def move_ants(current_node):
                     print(f"Move {ants_to_move} ants from {node.name} to {current_node.name}")
     for node in current_node.prec_nodes:
         move_ants(node)
-
-
-
-# REmplacer le lock par le nombre de fourmis qui ont bougé et compter le nombres de fourmis présentes au début de l'étape dans chaque noeud
