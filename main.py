@@ -18,7 +18,7 @@ if i >= 0 and i < len(indexes):
     print("\nDescription de la fourmiliere")
     anthill.print_nodes()
     draw_graph(anthill)
-    draw_graph_step(anthill.nodes,"initiale")
+    draw_graph_step(anthill,"initiale")
     print("\nEtapes des déplacements des fourmis")
     anthill.move_all_ants()
     print(f"Taille de la population : {anthill.size}.")

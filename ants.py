@@ -67,7 +67,7 @@ class Anthill:
         while last_node.nb_ants != nb_ants:
             print(f"Step  {step} :")
             move_ants(last_node)
-            draw_graph_step(self.nodes,step)
+            draw_graph_step(self,step)
             print("----------------\n")
             step += 1
             for node in self.nodes.values():
@@ -103,11 +103,17 @@ def draw_graph(anthill):
             edges_list.append((node.name,next_node.name))
     G.add_edges_from(edges_list)
     plt.title(anthill.filename)
-    nx.draw_planar(G, node_color=color_map, node_size=800, with_labels=True, font_weight='bold')
+    g =nx.draw_planar(G, node_color=color_map, 
+                      node_size=800, with_labels=True, 
+                      font_weight='bold')
+    pics_dir = get_pics_dir(anthill)
+    #plt.savefig(os.path.join(pics_dir,"graph"))
     plt.show()
+    
 
-def draw_graph_step(nodes,step):
+def draw_graph_step(anthill,step):
     G = nx.Graph()
+    nodes = anthill.nodes
     values_list = [node.nb_ants for node in nodes.values()]
     nodes_list = list(nodes.keys()) 
     labels = {}
@@ -126,6 +132,20 @@ def draw_graph_step(nodes,step):
             edges_list.append((node.name,next_node.name))
     G.add_edges_from(edges_list)
     plt.title(f"Etape {step}")
-    nx.draw_planar(G, node_color=color_map, node_size=800, labels=labels, with_labels=True, font_weight='bold')
+    nx.draw_planar(G,node_color=color_map, 
+                   node_size=800, labels=labels, 
+                   with_labels=True,font_weight='bold')
+    pics_dir = get_pics_dir(anthill)
+    #plt.savefig(os.path.join(pics_dir,str(step)))
     plt.show()
+    
+    
+def get_pics_dir(anthill):
+    pics_dirs = ["pics", 
+                 os.path.join("pics",os.path.splitext(anthill.filename)[0])
+                ]
+    for dir in pics_dirs:
+        if not os.path.exists(dir):
+            os.mkdir(dir)
+    return pics_dirs[1]
     
