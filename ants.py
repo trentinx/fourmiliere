@@ -1,4 +1,6 @@
 import os
+import networkx as nx
+import matplotlib.pyplot as plt
 
 class Node:
     def __init__(self,name, max_ants=1,nb_ants=0):
@@ -18,6 +20,7 @@ class Node:
 
 class Anthill:
     def __init__(self,filename):
+        self.filename = filename
         sd_append = True
         size = 0
         nodes = {}
@@ -64,6 +67,7 @@ class Anthill:
         while last_node.nb_ants != nb_ants:
             print(f"Step  {step} :")
             move_ants(last_node)
+            draw_graph_step(self.nodes,step)
             print("----------------\n")
             step += 1
             for node in self.nodes.values():
@@ -83,3 +87,45 @@ def move_ants(current_node):
     for node in current_node.prec_nodes:
         move_ants(node)
 
+
+
+def draw_graph(anthill):
+    G = nx.Graph()
+    nodes = anthill.nodes
+    nodes_list = list(nodes.keys())
+    color_map = ["blue"]*len(nodes_list)
+    color_map[0] = "red"
+    color_map[-1] = "green"
+    G.add_nodes_from(nodes_list)
+    edges_list = []
+    for node in nodes.values():
+        for next_node in node.next_nodes:
+            edges_list.append((node.name,next_node.name))
+    G.add_edges_from(edges_list)
+    plt.title(anthill.filename)
+    nx.draw_planar(G, node_color=color_map, node_size=800, with_labels=True, font_weight='bold')
+    plt.show()
+
+def draw_graph_step(nodes,step):
+    G = nx.Graph()
+    values_list = [node.nb_ants for node in nodes.values()]
+    nodes_list = list(nodes.keys()) 
+    labels = {}
+    for key,value in zip(nodes_list,values_list):
+        labels[key] = value
+    color_map = ["blue"]*len(nodes_list)
+    for i,value in enumerate(values_list):
+        if value > 0 :
+            color_map[i] = "yellow"
+    color_map[0] = "red"
+    color_map[-1] = "green"
+    G.add_nodes_from(nodes_list)
+    edges_list = []
+    for node in nodes.values():
+        for next_node in node.next_nodes:
+            edges_list.append((node.name,next_node.name))
+    G.add_edges_from(edges_list)
+    plt.title(f"Etape {step}")
+    nx.draw_planar(G, node_color=color_map, node_size=800, labels=labels, with_labels=True, font_weight='bold')
+    plt.show()
+    
