@@ -72,7 +72,34 @@ class Anthill:
             step += 1
             for room in self.rooms.values():
                 room.ants_at_start = room.nb_ants
-
+    
+    def get_paths(self):
+        current_path = None
+        paths_list = [["Sv"]]
+        paths_tmp = []
+        for key,room in self.rooms.items():
+            if key != "Sd":
+                for path in paths_list:
+                    if path[-1] == key:
+                        for next_room in room.next_rooms:
+                            current_path = path.copy()
+                            current_path.append(next_room.name)
+                            paths_tmp.append(current_path)
+                    else:
+                        current_path = path.copy()
+                        paths_tmp.append(current_path)
+                paths_list = paths_tmp.copy()
+                paths_tmp = []
+        return paths_list
+    
+    def get_cycles(self):
+        cycles = []
+        for path in self.get_paths():
+            for node in path:
+                if path.count(node) > 1:
+                    cycles.append(path)
+                    break
+        return cycles
 
 def move_ants(current_room):
     if current_room.name != "Sv":

@@ -45,3 +45,4 @@ La solution mise en place a permis de résoudre les problèmes qui ont été fou
 
 Améliorations possibles :
 - Minimiser le nombre d'étapes.
+- Gérer les problèmes de circuits élémentaires / cycles.
