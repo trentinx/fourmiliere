@@ -1,71 +1,138 @@
 import os
+import networkx as nx
+import matplotlib.pyplot as plt
 
-class Node:
+class Room:
     def __init__(self,name, max_ants=1,nb_ants=0):
         self.name = name
-        self.next_nodes = []
-        self.prec_nodes = []
+        self.next_rooms = []
+        self.prec_rooms = []
         self.max_ants = max_ants
         self.nb_ants = nb_ants
-        self.nb_ants_at_start = nb_ants
-        self.lock = False
+        self.ants_at_start = nb_ants
 
-    def add_next(self, node):
-        self.next_nodes.append(node)
+    def add_next(self, room):
+        self.next_rooms.append(room)
 
-    def add_pred(self,node):
-        self.prec_nodes.append(node)
-
+    def add_pred(self,room):
+        self.prec_rooms.append(room)
 
 
-def create_anthill(filename):
-    sd_append = True
-    nb_ants = 0
-    anthill = []
-    with open(os.path.join("data","fourmilieres",filename),"r") as datafile:
-        for line in datafile:
-            line = line.strip("\n")
-            if line.startswith("f="):
-                nb_ants = int(line.split("=")[1])
-                anthill.append(Node("Sv",nb_ants,nb_ants))
-            elif "-" not in line:
-                if "{" in line:
-                    name,_,max_ants,_ = line.split()
-                    anthill.append(Node(name,int(max_ants)))
+class Anthill:
+    def __init__(self,filename):
+        self.filename = filename
+        sd_append = True
+        size = 0
+        rooms = {}
+        with open(os.path.join("data","fourmilieres",filename),"r") as datafile:
+            for line in datafile:
+                line = line.strip("\n").strip(" ")
+                if line.startswith("f="):
+                    size = int(line.split("=")[1])
+                    rooms["Sv"] = Room("Sv",size,size)
+                elif "-" not in line:
+                    if "{" in line:
+                        name,_,max_ants,_ = line.split()
+                        rooms[name] = Room(name,int(max_ants))
+                    else:
+                        rooms[line] = Room(line)
                 else:
-                    anthill.append(Node(line))
-            else:
-                if sd_append:
-                    anthill.append(Node("Sd",nb_ants,0))
-                    sd_append = False
-                src_nodename,_,tgt_nodename = line.split(" ")
-                if src_nodename == "Sd" or tgt_nodename == "Sv":
-                    tmp_nodename = src_nodename
-                    src_nodename = tgt_nodename
-                    tgt_nodename = tmp_nodename
-                for node in anthill:
-                    if node.name == src_nodename:
-                        src_node = node
-                    if node.name == tgt_nodename:
-                        tgt_node = node
-                        break
-                src_node.add_next(tgt_node)
-                tgt_node.add_pred(src_node)
-    return anthill
+                    if sd_append:
+                        rooms["Sd"] = Room("Sd",size,0)
+                        sd_append = False
+                    src_roomname,_,tgt_roomname = line.split(" ")
+                    if src_roomname == "Sd" or tgt_roomname == "Sv":
+                        tmp_roomname = src_roomname
+                        src_roomname = tgt_roomname
+                        tgt_roomname = tmp_roomname
+                    rooms[src_roomname].add_next(rooms[tgt_roomname])
+                    rooms[tgt_roomname].add_pred(rooms[src_roomname])
+        self.rooms = rooms
+        self.size = size
+    
+    def print_rooms(self, reverse=False):
+        if not reverse:
+            for room in self.rooms.values():
+                for next_room in room.next_rooms:
+                    print(f"{room.name} - {next_room.name}")
+        else:
+            for room in self.rooms.values().__reversed__():
+                 for prec_room in room.prec_rooms:
+                    print(f"{room.name} - {prec_room.name}")
 
-def move_ants(current_node):
-    if current_node.name != "Sv":
-        for node in current_node.prec_nodes:
-            if not node.lock and node.nb_ants > 0:  
-                ants_to_move = min(current_node.max_ants - current_node.nb_ants , node.nb_ants)
-                current_node.nb_ants += ants_to_move
-                node.nb_ants -= ants_to_move
-                current_node.lock = (current_node.nb_ants == current_node.max_ants)
+    def move_all_ants(self):
+        last_room = self.rooms["Sd"]
+        nb_ants = self.size
+        step = 1
+        while last_room.nb_ants != nb_ants:
+            print(f"Step  {step} :")
+            move_ants(last_room)
+            draw_graph(self,step)
+            print("----------------\n")
+            step += 1
+            for room in self.rooms.values():
+                room.ants_at_start = room.nb_ants
+
+
+def move_ants(current_room):
+    if current_room.name != "Sv":
+        for room in current_room.prec_rooms:
+            if room.ants_at_start > 0:
+                ants_to_move = min(current_room.max_ants - current_room.nb_ants, room.ants_at_start)
+                current_room.nb_ants += ants_to_move
+                room.nb_ants -= ants_to_move
+                room.ants_at_start -= ants_to_move
                 if ants_to_move > 0:
-                    print(f"Move {ants_to_move} ants from {node.name} to {current_node.name}")
-    for node in current_node.prec_nodes:
-        move_ants(node)
+                    print(f"Move {ants_to_move} ants from {room.name} to {current_room.name}")
+    for room in current_room.prec_rooms:
+        move_ants(room)
+    
 
-
-
-# REmplacer le lock par le nombre de fourmis qui ont bougé et compter le nombres de fourmis présentes au début de l'étape dans chaque noeud
+def draw_graph(anthill,step=None):
+    G = nx.Graph()
+    rooms = anthill.rooms
+    rooms_list = list(rooms.keys()) 
+    color_map = ["blue"]*len(rooms_list)
+    labels = {}
+    if  step:
+        values_list = [room.nb_ants for room in rooms.values()]
+        for key,value in zip(rooms_list,values_list):
+            labels[key] = value
+        for i,value in enumerate(values_list):
+            if value > 0 :
+                color_map[i] = "yellow"
+    color_map[0] = "red"
+    color_map[-1] = "green"
+    G.add_nodes_from(rooms_list)
+    edges_list = []
+    for room in rooms.values():
+        for next_room in room.next_rooms:
+            edges_list.append((room.name,next_room.name))
+    G.add_edges_from(edges_list)
+    if step:
+        title = f"Etape {step}"
+    else:
+        title = anthill.filename
+    plt.title(title)
+    if step:
+        nx.draw_planar(G,node_color=color_map,
+                   node_size=800, labels=labels, 
+                   with_labels=True,font_weight='bold')
+    else:
+        nx.draw_planar(G,node_color=color_map,
+                   node_size=800, with_labels=True,
+                   font_weight='bold')
+    pics_dir = get_pics_dir(anthill)
+    #plt.savefig(os.path.join(pics_dir,str(step)))
+    plt.show()
+    
+    
+def get_pics_dir(anthill):
+    pics_dirs = ["pics", 
+                 os.path.join("pics",os.path.splitext(anthill.filename)[0])
+                ]
+    for dir in pics_dirs:
+        if not os.path.exists(dir):
+            os.mkdir(dir)
+    return pics_dirs[1]
+    

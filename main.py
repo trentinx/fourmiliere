@@ -1,17 +1,27 @@
 from  ants import *
-
-anthill = create_anthill("fourmiliere_trois.txt")
-
-last_node = anthill[-1]
-nb_ants = anthill[0].nb_ants
+import sys
 
 
+indexes = ["zero","un","deux","trois","quatre","cinq"]
 
-step = 1
-while last_node.nb_ants != nb_ants:
-    print(f"Step  {step} :")
-    move_ants(last_node)
-    print("----------------\n")
-    step += 1
-    for node in anthill:
-        node.lock = False
+
+i = 0
+if len(sys.argv)==1:
+    i = int(input("Merci d'entrer un entier compris entre 0 et 5 inclus : "))
+else:
+    i = int(sys.argv[1])
+
+if i >= 0 and i < len(indexes): 
+    filename = f"fourmiliere_{indexes[i]}.txt"
+    print(f"Création de la fourmilière issue du fichier {filename}")
+    anthill = Anthill(filename)
+    print("\nDescription de la fourmiliere")
+    anthill.print_rooms()
+    draw_graph(anthill)
+    draw_graph(anthill,"initiale")
+    print("\nEtapes des déplacements des fourmis")
+    anthill.move_all_ants()
+    print(f"Taille de la population : {anthill.size}.")
+    print(f"Nombres de fourmis arrivées dans le dortoir : {anthill.rooms['Sd'].nb_ants}.")
+else:
+    print("Le paramètre doit être compris entre 0 et 5 inclus")
