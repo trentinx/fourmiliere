@@ -130,7 +130,7 @@ class Anthill:
             print("----------------\n")
             step += 1
             for room in self.rooms.values():
-                room.ants_at_start = room.nb_ant
+                room.ants_at_start = room.nb_ants
 
     def draw_graph(self,step=None):
         """
@@ -146,7 +146,7 @@ class Anthill:
         if  step:
             values_list = [room.nb_ants for room in rooms.values()]
             for key,value in zip(rooms_list,values_list):
-                labels[key] = value
+                labels[key] = f"{value}"
             for i,value in enumerate(values_list):
                 if value > 0 :
                     color_map[i] = "yellow"
@@ -158,7 +158,7 @@ class Anthill:
             for next_room in room.next_rooms:
                 edges_list.append((room.name,next_room.name))
         G.add_edges_from(edges_list)
-        if step:
+        if step :
             title = f"Etape {step}"
         else:
             title = self.filename
@@ -172,7 +172,10 @@ class Anthill:
                        node_size=800, with_labels=True,
                        font_weight='bold')
         pics_dir = self.get_pics_dir()
-        #plt.savefig(os.path.join(pics_dir,str(step)))
+        if step:
+            plt.savefig(os.path.join(pics_dir,str(step)))
+        else:
+            plt.savefig(os.path.join(pics_dir,os.path.splitext(self.filename)[0]))
         plt.show()
     
     
