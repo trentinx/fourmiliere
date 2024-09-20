@@ -1,5 +1,5 @@
-from  ants import *
 import sys
+from  ants import Anthill
 
 
 indexes = ["zero","un","deux","trois","quatre","cinq","six"]
@@ -11,7 +11,7 @@ if len(sys.argv)==1:
 else:
     i = int(sys.argv[1])
 
-if i >= 0 and i < len(indexes): 
+if 0 <= i < len(indexes):
     filename = f"fourmiliere_{indexes[i]}.txt"
     print(f"Création de la fourmilière issue du fichier {filename}")
     anthill = Anthill(filename)
