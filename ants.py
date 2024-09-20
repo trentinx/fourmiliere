@@ -75,6 +75,7 @@ class Anthill:
                     rooms[src_room_name].add_next(rooms[tgt_room_name])
                     rooms[tgt_room_name].add_pred(rooms[src_room_name])
         self.rooms = rooms
+        self.distances = self.get_distances()
         self.size = size
         self.filename = filename
 
@@ -106,7 +107,8 @@ class Anthill:
         """
         if current_room.name != "Sv":
             for room in current_room.prec_rooms:
-                if room.ants_at_start > 0:
+                if room.ants_at_start > 0 and \
+                self.distances[current_room.name] < self.distances[room.name]:
                     ants_to_move = min(current_room.max_ants - current_room.nb_ants, room.ants_at_start)
                     current_room.nb_ants += ants_to_move
                     room.nb_ants -= ants_to_move
@@ -114,7 +116,8 @@ class Anthill:
                     if ants_to_move > 0:
                         print(f"Move {ants_to_move} ants from {room.name} to {current_room.name}")
         for room in current_room.prec_rooms:
-            self.move_ants(room)
+            if self.distances[current_room.name] < self.distances[room.name]:
+                self.move_ants(room)
     
     def move_all_ants(self):
         """
@@ -138,7 +141,7 @@ class Anthill:
             step (_type_, optional): If None, labels are rooms names otherwise
             labels are number of ants in each room. Defaults to None.
         """
-        G = nx.Graph()
+        G = nx.DiGraph()
         rooms = self.rooms
         rooms_list = list(rooms.keys()) 
         color_map = ["blue"]*len(rooms_list)
@@ -195,33 +198,24 @@ class Anthill:
         return pics_dirs[1]
 
 
-def build_paths(graph,node,paths):
-    if node == "Sd":
-        return paths
-    paths_list = paths.copy()
-    tmp_paths_list = []
-    next_nodes = graph[node]
-    for next_node in next_nodes:
-        #print(f"Next node is {next_node}")
-        for path in paths_list:
-            #print(f"Current path is {path}")
-            if path[-1] == node:
-                #print(f"{path} ends by {node}")
-                tmp_path = path.copy()
-                tmp_path.append(next_node)
-                if tmp_path not in tmp_paths_list:
-                    tmp_paths_list.append(tmp_path.copy())
-            else:
-                #print(f"{path} doesn't end by {node}")
-                if path not in tmp_paths_list:
-                    tmp_paths_list.append(path)
-    paths_list = tmp_paths_list.copy()
-    for next_node in next_nodes:
-        paths_list=build_paths(graph,next_node,paths_list)
-    return paths_list
-
-            
+    def get_distances(self):
+        prec_rooms = { key: [ prec_room.name for prec_room in room.prec_rooms ]
+                    for key,room in self.rooms.items()}
+        distances = { key : 0 for key in self.rooms}
+        print(prec_rooms)
+        return self.explore("Sd",prec_rooms, distances,0)
+        
+    def explore(self,current_node,nodes_list,distances,distance):
+        if current_node == "Sv":
+            return
+        distance += 1
+        for node in nodes_list[current_node]:
+            if distances[node] == 0  or distances[node] > distance:
+                distances[node] = distance
+                self.explore(node,nodes_list,distances,distance)
+        return distances
 
     
 if __name__ == "__main__":
-    anthill = Anthill("fourmiliere_cinq.txt")
+    anthill = Anthill("fourmiliere_six.txt")
+    print(anthill.distances)
