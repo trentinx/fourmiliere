@@ -175,10 +175,9 @@ class Anthill:
                        node_size=800, with_labels=True,
                        font_weight='bold')
         pics_dir = self.get_pics_dir()
-        if step:
-            plt.savefig(os.path.join(pics_dir,str(step)))
-        else:
-            plt.savefig(os.path.join(pics_dir,os.path.splitext(self.filename)[0]))
+        if not step:
+            step = "graph"
+        plt.savefig(os.path.join(pics_dir,str(step)))
         plt.show()
     
     
