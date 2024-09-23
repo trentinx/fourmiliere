@@ -1,18 +1,32 @@
+"""Ants modulde
+This module implements classes needed to describe a anthil and its rooms.
+It allows to draw
+
+"""
 import os
 import networkx as nx
 import matplotlib.pyplot as plt
 
 class Room:
-    def __init__(self,name, max_ants=1,nb_ants=0):
-        """
-        Room constructor
+    """Room class describes anthill nodes.
 
-        Args:
-            name (str): Room name
-            max_ants (int, optional): Max number of ants that can be simultaneously
-                in the room. Defaults to 1.
-            nb_ants (int, optional): Number of ants in the room. Defaults to 0.
-        """
+    Args:
+        name (str): Room name
+        max_ants (int, optional): Max number of ants that can be simultaneously
+            in the room. Defaults to 1.
+        nb_ants (int, optional): Number of ants in the room. Defaults to 0.
+
+    Attributes:
+        name ()
+        next_rooms (list): List of neighbour rooms that come right after the current one.
+        prec_rooms (list): List of neighbour rooms that come right aftbeforre 
+            the current one.
+        max_ants (int): Maximum number of ants that can be simutaneously in the room.
+        nb_ants (int): Current number of ants  in the room.
+        ants_at_start (int): Number of ants  in the room at the begining of a step.
+
+    """
+    def __init__(self,name, max_ants=1,nb_ants=0):
         self.name = name
         self.next_rooms = []
         self.prec_rooms = []
@@ -40,15 +54,24 @@ class Room:
 
 
 class Anthill:
+    """Anthill is a collection of nodes.
+    
+    Args:
+        filename (str): The name of the file that describe the anthill.
+            The file must be in data/fourmilieres directory.
+
+    Attributes:
+        rooms (dict): The list of Room objects indexed by the names of the rooms.
+        distances (dict): keys are room names and values are the number of rooms
+            to reach the dormitory.
+        size (int): The number of ants.
+        filename (str): The name of the file that describe the anthill. A folder will
+            be crated in pics directory in order to save a picture of the graph
+            at every move. 
+    """
     def __init__(self,filename):
-        """
-        Anthill Constructor, a dictionnary of Room objects.
-        Args:
-            filename (str): The name of the file that describe the anthill.
-                The file must be in data/fourmilieres directory.
-        """
         sd_append = True
-        size = 0
+        size = -1
         rooms = {}
         with open(os.path.join("data","fourmilieres",filename),"r",encoding="utf-8") as datafile:
             for line in datafile:
@@ -71,10 +94,11 @@ class Anthill:
                         src_room_name, tgt_room_name = tgt_room_name, src_room_name
                     rooms[src_room_name].add_next(rooms[tgt_room_name])
                     rooms[tgt_room_name].add_pred(rooms[src_room_name])
-        self.rooms = rooms
-        self.distances = self.get_distances()
-        self.size = size
-        self.filename = filename
+            self.rooms = rooms
+            self.distances = self.get_distances()
+            self.size = size
+            self.filename = filename
+        
 
     def print_rooms(self, reverse=False):
         """
@@ -229,10 +253,3 @@ class Anthill:
         return distances
 
 __all__ = ["Anthill"]
-
-if __name__ == "__main__":
-    anthill = Anthill("fourmiliere_quatre.txt")
-    print(anthill.distances)
-
-
-

@@ -1,18 +1,9 @@
 import sys
 from  ants import Anthill
 
-
-indexes = ["zero","un","deux","trois","quatre","cinq","six"]
-
-
-i = 0
-if len(sys.argv)==1:
-    i = int(input("Merci d'entrer un entier compris entre 0 et 6 inclus : "))
-else:
-    i = int(sys.argv[1])
-
-if 0 <= i < len(indexes):
-    filename = f"fourmiliere_{indexes[i]}.txt"
+print(len(sys.argv))
+if len(sys.argv) ==2 :
+    filename = sys.argv[1]
     print(f"Création de la fourmilière issue du fichier {filename}")
     anthill = Anthill(filename)
     print("\nDescription de la fourmiliere")
@@ -24,4 +15,5 @@ if 0 <= i < len(indexes):
     print(f"Taille de la population : {anthill.size}.")
     print(f"Nombres de fourmis arrivées dans le dortoir : {anthill.rooms['Sd'].nb_ants}.")
 else:
-    print("Le paramètre doit être compris entre 0 et 6 inclus")
+    print("Usage:\npython main.py <filename> : filename est le nom du fichier qui \
+            doit être dans data/fourmilieres")
